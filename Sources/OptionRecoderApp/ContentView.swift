@@ -1,6 +1,9 @@
 import SwiftData
 import SwiftUI
 import WheelStrategyCore
+#if os(macOS)
+import AppKit
+#endif
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -604,8 +607,8 @@ private struct TradeRow: View {
 private struct NewPositionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var ticker = ""
+    @State private var contractQuantityText = String(WheelLedger.contractMultiplier)
     @State private var strategy: OptionStrategy = .wheel
-    @State private var contractQuantity = WheelLedger.contractMultiplier
 
     let onAdd: (String, OptionStrategy, Int) -> Bool
 
@@ -619,12 +622,8 @@ private struct NewPositionSheet: View {
                     .font(.title2.weight(.semibold))
             }
 
-            TextField("Ticker", text: $ticker)
-                .textFieldStyle(.roundedBorder)
-                .onChange(of: ticker) { _, newValue in
-                    ticker = newValue.uppercased()
-                }
-                .onSubmit(add)
+            AppKitTextField(placeholder: "Ticker", text: $ticker, onSubmit: add)
+                .frame(height: 28)
                 .accessibilityIdentifier("new-position-ticker-field")
 
             Picker("Strategy", selection: $strategy) {
@@ -635,9 +634,12 @@ private struct NewPositionSheet: View {
             .pickerStyle(.segmented)
             .accessibilityIdentifier("new-position-strategy-picker")
 
-            TextField("Contract quantity", value: $contractQuantity, format: .number)
-                .textFieldStyle(.roundedBorder)
-                .onSubmit(add)
+            AppKitTextField(
+                placeholder: "Contract quantity",
+                text: $contractQuantityText,
+                onSubmit: add
+            )
+                .frame(height: 28)
                 .accessibilityIdentifier("new-position-contract-quantity-field")
 
             HStack {
@@ -652,7 +654,7 @@ private struct NewPositionSheet: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
-                .disabled(normalizedTicker.isEmpty || contractQuantity <= 0)
+                .disabled(!canAdd)
                 .accessibilityIdentifier("new-position-submit-button")
             }
         }
@@ -661,7 +663,7 @@ private struct NewPositionSheet: View {
     }
 
     private func add() {
-        guard !normalizedTicker.isEmpty, contractQuantity > 0 else { return }
+        guard canAdd, let contractQuantity else { return }
         if onAdd(normalizedTicker, strategy, contractQuantity) {
             dismiss()
         }
@@ -670,4 +672,78 @@ private struct NewPositionSheet: View {
     private var normalizedTicker: String {
         ticker.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
     }
+
+    private var contractQuantity: Int? {
+        Int(contractQuantityText.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private var canAdd: Bool {
+        guard !normalizedTicker.isEmpty, let contractQuantity else { return false }
+        return contractQuantity > 0
+    }
 }
+
+#if os(macOS)
+private struct AppKitTextField: NSViewRepresentable {
+    let placeholder: String
+    @Binding var text: String
+    let onSubmit: () -> Void
+
+    func makeNSView(context: Context) -> NSTextField {
+        let textField = NSTextField()
+        textField.placeholderString = placeholder
+        textField.delegate = context.coordinator
+        textField.isEditable = true
+        textField.isSelectable = true
+        textField.focusRingType = .default
+        textField.lineBreakMode = .byTruncatingTail
+        textField.bezelStyle = .roundedBezel
+        return textField
+    }
+
+    func updateNSView(_ nsView: NSTextField, context: Context) {
+        if nsView.stringValue != text {
+            nsView.stringValue = text
+        }
+
+        context.coordinator.parent = self
+
+        DispatchQueue.main.async {
+            if nsView.window?.firstResponder == nil {
+                nsView.window?.makeFirstResponder(nsView)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject, NSTextFieldDelegate {
+        var parent: AppKitTextField
+
+        init(parent: AppKitTextField) {
+            self.parent = parent
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let textField = notification.object as? NSTextField else { return }
+            parent.text = textField.stringValue
+        }
+
+        func controlTextDidEndEditing(_ notification: Notification) {
+            guard let textField = notification.object as? NSTextField else { return }
+            parent.text = textField.stringValue
+        }
+
+        func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                parent.onSubmit()
+                return true
+            }
+
+            return false
+        }
+    }
+}
+#endif
