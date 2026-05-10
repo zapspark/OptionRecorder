@@ -3,7 +3,7 @@ import XCTest
 
 @MainActor
 final class OptionRecoderAppUITests: XCTestCase {
-    func testCreateWheelPositionAddPutAndAssignIt() throws {
+    func testCreateWheelPositionAddCashSecuredPutAndAssignIt() throws {
         let storeURL = temporaryStoreURL()
         try? FileManager.default.removeItem(at: storeURL.deletingLastPathComponent())
 
@@ -49,7 +49,7 @@ final class OptionRecoderAppUITests: XCTestCase {
 
         addTrade(app, strike: "180", premium: "2.50")
 
-        XCTAssertTrue(app.staticTexts["Put"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Cash-Secured Put"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Open"].waitForExistence(timeout: 5))
         assertMetrics(
             app,
@@ -59,7 +59,9 @@ final class OptionRecoderAppUITests: XCTestCase {
             openTrades: "1"
         )
 
-        selectStatus("Assigned", in: app)
+        XCTAssertTrue(app.buttons["trade-expired-button"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["trade-rolled-button"].waitForExistence(timeout: 5), app.debugDescription)
+        selectQuickStatus("trade-assigned-button", in: app)
 
         XCTAssertTrue(app.staticTexts["Assigned"].waitForExistence(timeout: 5))
         assertMetrics(
@@ -131,6 +133,12 @@ final class OptionRecoderAppUITests: XCTestCase {
         let menuItem = app.menuItems[status]
         XCTAssertTrue(menuItem.waitForExistence(timeout: 5), app.debugDescription)
         menuItem.click()
+    }
+
+    private func selectQuickStatus(_ identifier: String, in app: XCUIApplication) {
+        let button = app.buttons[identifier]
+        XCTAssertTrue(button.waitForEnabled(timeout: 5), app.debugDescription)
+        button.click()
     }
 
     private func assertMetrics(

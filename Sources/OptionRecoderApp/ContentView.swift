@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var errorMessage: String?
 
     private var totalPremium: Double {
-        positions.reduce(0) { $0 + $1.cumulativePremium }
+        positions.reduce(0) { $0 + $1.totalPremiumCollected }
     }
 
     private var totalShares: Int {
@@ -195,22 +195,34 @@ private struct PositionRow: View {
                         .foregroundStyle(.secondary)
                 }
 
-                HStack {
-                    Label("\(position.contractQuantity) / contract", systemImage: "number")
-                    Spacer()
-                    Label(
-                        position.adjustedCostBasis.formatted(.currency(code: currencyCode)),
-                        systemImage: "target"
+                HStack(spacing: 12) {
+                    positionStat("Price", value: "--")
+                    positionStat(
+                        "Premium",
+                        value: position.totalPremiumCollected.formatted(.currency(code: currencyCode))
                     )
-                    Spacer()
-                    Text(position.cumulativePremium.formatted(.currency(code: currencyCode)))
+                    positionStat(
+                        "Cost Basis",
+                        value: position.adjustedCostBasis.formatted(.currency(code: currencyCode))
+                    )
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 6)
         .accessibilityIdentifier("position-row-\(position.ticker)-\(position.strategy.rawValue)")
+    }
+
+    private func positionStat(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var currencyCode: String {
@@ -222,7 +234,7 @@ private struct PositionDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var position: Position
-    @State private var tradeType: OptionTradeType = .put
+    @State private var tradeType: OptionTradeType = .cashSecuredPut
     @State private var strike = 0.0
     @State private var premium = 0.0
     @State private var expiryDate = Date()
@@ -230,10 +242,10 @@ private struct PositionDetailView: View {
 
     private var sortedTrades: [OptionTrade] {
         position.trades.sorted { lhs, rhs in
-            if lhs.expiryDate == rhs.expiryDate {
-                return lhs.openedAt > rhs.openedAt
+            if lhs.expiry == rhs.expiry {
+                return lhs.date > rhs.date
             }
-            return lhs.expiryDate > rhs.expiryDate
+            return lhs.expiry > rhs.expiry
         }
     }
 
@@ -301,13 +313,13 @@ private struct PositionDetailView: View {
                 )
                 MetricTile(
                     title: "Premium Collected",
-                    value: position.cumulativePremium.formatted(.currency(code: currencyCode)),
+                    value: position.totalPremiumCollected.formatted(.currency(code: currencyCode)),
                     icon: "banknote",
                     identifier: "premium-metric"
                 )
                 MetricTile(
                     title: "Open Trades",
-                    value: "\(position.trades.filter { $0.status == .open && $0.type != .activeClose }.count)",
+                    value: "\(position.trades.filter { $0.status == .open && $0.type.countsAsOpenTrade }.count)",
                     icon: "clock",
                     identifier: "open-trades-metric"
                 )
@@ -327,41 +339,39 @@ private struct PositionDetailView: View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "New Trade", icon: "square.and.pencil")
 
-            Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
-                GridRow {
-                    Picker("Type", selection: $tradeType) {
-                        ForEach(OptionTradeType.allCases) { type in
-                            Text(type.rawValue).tag(type)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 260)
-                    .accessibilityIdentifier("trade-type-picker")
-
-                    TextField("Strike", value: $strike, format: .number.precision(.fractionLength(2)))
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 110)
-                        .accessibilityIdentifier("trade-strike-field")
-
-                    TextField("Premium", value: $premium, format: .number.precision(.fractionLength(2)))
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 110)
-                        .accessibilityIdentifier("trade-premium-field")
-
-                    DatePicker("Expiry", selection: $expiryDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .frame(width: 150)
-                        .accessibilityIdentifier("trade-expiry-picker")
-
-                    Button {
-                        addTrade()
-                    } label: {
-                        Label("Add", systemImage: "plus")
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(!canAddTrade)
-                    .accessibilityIdentifier("add-trade-form-button")
+            Picker("Type", selection: $tradeType) {
+                ForEach(OptionTradeType.allCases) { type in
+                    Text(type.rawValue).tag(type)
                 }
+            }
+            .pickerStyle(.segmented)
+            .frame(maxWidth: 620)
+            .accessibilityIdentifier("trade-type-picker")
+
+            HStack(spacing: 12) {
+                TextField("Strike", value: $strike, format: .number.precision(.fractionLength(2)))
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 110)
+                    .accessibilityIdentifier("trade-strike-field")
+
+                TextField("Premium", value: $premium, format: .number.precision(.fractionLength(2)))
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 110)
+                    .accessibilityIdentifier("trade-premium-field")
+
+                DatePicker("Expiry", selection: $expiryDate, displayedComponents: .date)
+                    .labelsHidden()
+                    .frame(width: 150)
+                    .accessibilityIdentifier("trade-expiry-picker")
+
+                Button {
+                    addTrade()
+                } label: {
+                    Label("Add", systemImage: "plus")
+                }
+                .buttonStyle(.bordered)
+                .disabled(!canAddTrade)
+                .accessibilityIdentifier("add-trade-form-button")
             }
         }
     }
@@ -413,7 +423,7 @@ private struct PositionDetailView: View {
                 type: tradeType,
                 strike: strike,
                 premium: premium,
-                expiryDate: expiryDate
+                expiry: expiryDate
             )
             strike = 0
             premium = 0
@@ -531,7 +541,7 @@ private struct TradeRow: View {
                 HStack(spacing: 12) {
                     Label(trade.strike.formatted(.currency(code: currencyCode)), systemImage: "target")
                     Label(trade.premium.formatted(.currency(code: currencyCode)), systemImage: "banknote")
-                    Label(trade.expiryDate.formatted(.dateTime.month().day().year()), systemImage: "calendar")
+                    Label(trade.expiry.formatted(.dateTime.month().day().year()), systemImage: "calendar")
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -539,17 +549,7 @@ private struct TradeRow: View {
 
             Spacer()
 
-            Picker("Status", selection: Binding(
-                get: { trade.status },
-                set: { onStatusChange(trade, $0) }
-            )) {
-                ForEach(OptionTradeStatus.allCases) { status in
-                    Text(status.rawValue).tag(status)
-                }
-            }
-            .labelsHidden()
-            .frame(width: 132)
-            .accessibilityIdentifier("trade-status-picker")
+            statusControl
 
             Button(role: .destructive) {
                 onDelete(trade)
@@ -564,6 +564,46 @@ private struct TradeRow: View {
         .padding(12)
     }
 
+    @ViewBuilder
+    private var statusControl: some View {
+        if trade.type == .cashSecuredPut, trade.status == .open {
+            HStack(spacing: 8) {
+                quickStatusButton("Expired", systemImage: "checkmark.circle", status: .expired)
+                    .accessibilityIdentifier("trade-expired-button")
+                quickStatusButton("Assigned", systemImage: "arrow.down.to.line", status: .assigned)
+                    .accessibilityIdentifier("trade-assigned-button")
+                quickStatusButton("Rolled", systemImage: "arrow.triangle.2.circlepath", status: .rolled)
+                    .accessibilityIdentifier("trade-rolled-button")
+            }
+        } else {
+            Picker("Status", selection: Binding(
+                get: { trade.status },
+                set: { onStatusChange(trade, $0) }
+            )) {
+                ForEach(OptionTradeStatus.allCases) { status in
+                    Text(status.rawValue).tag(status)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 132)
+            .accessibilityIdentifier("trade-status-picker")
+        }
+    }
+
+    private func quickStatusButton(
+        _ title: String,
+        systemImage: String,
+        status: OptionTradeStatus
+    ) -> some View {
+        Button {
+            onStatusChange(trade, status)
+        } label: {
+            Label(title, systemImage: systemImage)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+    }
+
     private var statusTint: Color {
         switch trade.status {
         case .open:
@@ -574,15 +614,21 @@ private struct TradeRow: View {
             .green
         case .closed:
             .secondary
+        case .rolled:
+            .purple
         }
     }
 
     private var typeIcon: String {
         switch trade.type {
-        case .put:
+        case .cashSecuredPut:
             "arrow.down.left.circle.fill"
-        case .call:
+        case .coveredCall:
             "arrow.up.right.circle.fill"
+        case .buyStock:
+            "plus.circle.fill"
+        case .sellStock:
+            "minus.circle.fill"
         case .activeClose:
             "xmark.circle.fill"
         }
@@ -590,10 +636,14 @@ private struct TradeRow: View {
 
     private var typeTint: Color {
         switch trade.type {
-        case .put:
+        case .cashSecuredPut:
             .purple
-        case .call:
+        case .coveredCall:
             .teal
+        case .buyStock:
+            .green
+        case .sellStock:
+            .orange
         case .activeClose:
             .red
         }

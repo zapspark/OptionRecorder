@@ -1,6 +1,6 @@
 # OptionRecorder
 
-OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI 构建桌面界面，用 SwiftData 持久化数据，核心目标是按策略记录每个标的的 Put / Call / 主动平仓交易、权利金收入、持股数量和调整后成本。
+OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI 构建桌面界面，用 SwiftData 持久化数据，核心目标是按策略记录每个标的的 Cash-Secured Put、Covered Call、股票买卖、主动平仓交易、权利金收入、持股数量和调整后成本。
 
 当前已实现 Wheel Strategy 记账规则，数据模型已带有策略维度，后续可以继续扩展 Covered Call、Cash-Secured Put 或其他期权策略的独立记账逻辑。正股价格获取已经抽象为 provider 机制，便于后续把价格预警接入到 UI。
 
@@ -9,15 +9,20 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 - 按股票代码和策略创建记账账本，代码会自动标准化为大写。
 - 每个账本可设置一张期权对应的标的数量，默认 `100`，用于权利金和 assignment 计算。
 - 当前策略支持 `Wheel`，核心分发层会按策略调用对应记账规则。
-- 为持仓记录期权交易，支持 `Put`、`Call` 和 `Active Close` 三种操作类型。
+- 为持仓记录交易，支持 `Cash-Secured Put`、`Covered Call`、`Buy Stock`、`Sell Stock` 和 `Active Close` 五种操作类型。
 - 记录每笔交易的行权价、权利金、到期日和状态。
-- 支持 `Open`、`Assigned`、`Expired`、`Closed` 四种交易状态。
-- Put 被标记为 `Assigned` 时，自动按账本设置的合约数量增加持股和股票成本。
-- 从 `Assigned` 改回其他状态时，自动撤销对应的 Put assignment 持股和成本影响。
+- 每笔交易带有显式 `UUID`，并记录交易日期 `date`；ticker 通过所属 `Position` 账本关联。
+- 支持 `Open`、`Assigned`、`Expired`、`Closed`、`Rolled` 五种交易状态。
+- Cash-Secured Put 被标记为 `Assigned` 时，自动按账本设置的合约数量增加持股和股票成本。
+- Covered Call 被标记为 `Assigned` 时，自动按账本设置的合约数量减少持股和股票成本。
+- `Buy Stock` / `Sell Stock` 会在录入时直接调整持股和股票成本。
+- 从 `Assigned` 改回其他状态时，自动撤销对应的 assignment 持股和成本影响。
 - 自动累计净权利金，并计算调整后持股成本；`Active Close` 会作为负向权利金现金流扣减净权利金。
 - 正股价格获取已抽象为 `MarketPriceProvider`，当前预留 Yahoo Finance、Alpha Vantage 和 AkShare 三类来源。
 - A 股 ticker 会被路由到 AkShare provider；Swift app 通过 `AKSHARE_PRICE_ENDPOINT` 指向本地或内网 AkShare HTTP bridge，不直接硬耦合 Python 运行时。
 - 在侧栏展示整体账本数量、总股数、总权利金；在详情页展示单个策略账本指标和交易时间线。
+- 侧栏每个股票卡片展示核心三项：当前价格占位、累计收租和当前摊低成本；价格后续可接入已抽象的 provider。
+- 对 Open 状态的 Cash-Secured Put，时间线行内提供 `Expired`、`Assigned`、`Rolled` 三个快捷按钮，减少手动选择状态的录入成本。
 - 支持删除持仓和交易；删除持仓会级联删除其交易记录。
 
 ## 当前状态
@@ -27,7 +32,10 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 - Wheel Strategy 账本创建、交易录入、状态流转和 assignment 记账。
 - 多策略扩展基础：`OptionStrategy` + `OptionLedger` 策略分发层。
 - App 入口和 target 名称为 `OptionRecoderApp`。
+- Trade schema 已对齐为显式 `UUID`、交易日期、到期日、操作类型和状态；ticker 通过账本关系关联。
 - 主动平仓类型 `Active Close`，按负向现金流扣减净权利金。
+- 股票买入/卖出类型 `Buy Stock` / `Sell Stock`，按账本合约数量更新持股和股票成本。
+- 展期状态 `Rolled`。
 - 每个账本可配置一张期权对应的标的数量，默认 `100`。
 - 正股价格 provider 抽象，支持按 ticker 市场类型路由到不同数据源。
 - Core 测试和 macOS UI 自动化测试基础。
@@ -35,7 +43,7 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 待接入 UI：
 
 - 到期日历视图：聚合近期到期合约，优先展示下周五前需要处理的 open trades。
-- 价格预警视图：拉取正股现价后，对现价低于 Put 行权价的合约做红色预警。
+- 价格预警视图：拉取正股现价后，对现价低于 Cash-Secured Put 行权价的合约做红色预警。
 
 ## 数据存储
 
@@ -92,6 +100,14 @@ xcodebuild \
 UI 测试会使用临时 SQLite 文件，不会写入用户真实的 `~/Library/Application Support/OptionRecorder/OptionRecorder.sqlite`。
 在 Codex sandbox 中，macOS 会阻止连接 `com.apple.testmanagerd`，因此请在本机普通终端中执行上面的命令。
 
+## GitHub Actions
+
+仓库包含 GitHub Actions 流水线 `.github/workflows/build-app.yml`，只会在 GitHub Release 发布时执行：
+
+- `swift test` 跑核心业务逻辑测试。
+- `xcodebuild` 以 Release 配置构建 macOS app。
+- 将 `OptionRecoderApp.app` 打包为 `OptionRecoderApp-macOS.zip` 并上传为 workflow artifact。
+
 ## 正股价格来源
 
 正股价格获取通过 `MarketPriceProvider` 协议抽象，便于后续替换或新增数据源：
@@ -138,7 +154,7 @@ Tests/
 
 - `OptionStrategy`：策略类型枚举，当前包含 `Wheel`。
 - `Position`：标的、策略、合约数量、股数、股票成本、累计权利金和调整后成本。
-- `OptionTrade`：单笔期权交易。
+- `OptionTrade`：单笔交易，包含 `UUID`、交易日期、操作类型、行权价、净权利金、到期日、状态，并通过 `Position` 关联 ticker。
 - `MarketPriceProvider`：正股价格来源抽象和 provider 路由。
 - `OptionLedger`：面向 UI 的策略分发入口。
 - `WheelLedger`：Wheel Strategy 的创建持仓、添加交易、更新状态及 assignment 记账逻辑。

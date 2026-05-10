@@ -3,16 +3,21 @@ import SwiftData
 
 @Model
 public final class OptionTrade {
+    public var id: UUID
     public var typeRawValue: String
     public var strike: Double
     public var premium: Double
-    public var expiryDate: Date
+    public var expiry: Date
     public var statusRawValue: String
-    public var openedAt: Date
+    public var date: Date
     public var position: Position?
 
+    public var ticker: String {
+        position?.ticker ?? ""
+    }
+
     public var type: OptionTradeType {
-        get { OptionTradeType(rawValue: typeRawValue) ?? .put }
+        get { OptionTradeType(rawValue: typeRawValue) ?? .cashSecuredPut }
         set { typeRawValue = newValue.rawValue }
     }
 
@@ -22,20 +27,22 @@ public final class OptionTrade {
     }
 
     public init(
+        id: UUID = UUID(),
         type: OptionTradeType,
         strike: Double,
         premium: Double,
-        expiryDate: Date,
+        expiry: Date,
         status: OptionTradeStatus = .open,
-        openedAt: Date = .now,
+        date: Date = .now,
         position: Position? = nil
     ) {
+        self.id = id
         self.typeRawValue = type.rawValue
         self.strike = strike
         self.premium = premium
-        self.expiryDate = expiryDate
+        self.expiry = expiry
         self.statusRawValue = status.rawValue
-        self.openedAt = openedAt
+        self.date = date
         self.position = position
     }
 }

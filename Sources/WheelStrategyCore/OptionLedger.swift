@@ -26,7 +26,7 @@ public struct OptionLedger {
         type: OptionTradeType,
         strike: Double,
         premium: Double,
-        expiryDate: Date
+        expiry: Date
     ) throws -> OptionTrade {
         switch position.strategy {
         case .wheel:
@@ -35,7 +35,7 @@ public struct OptionLedger {
                 type: type,
                 strike: strike,
                 premium: premium,
-                expiryDate: expiryDate
+                expiry: expiry
             )
         }
     }
@@ -48,10 +48,6 @@ public struct OptionLedger {
     }
 
     public func removeTrade(_ trade: OptionTrade, from position: Position) {
-        if trade.type == .put, trade.status == .assigned {
-            markStatus(.open, for: trade, in: position)
-        }
-
-        position.cumulativePremium -= wheelLedger.premiumImpact(for: trade, in: position)
+        wheelLedger.reverseTradeEffects(trade, from: position)
     }
 }

@@ -7,7 +7,7 @@ public final class Position {
     public var strategyRawValue: String?
     public var shares: Int
     public var grossShareCost: Double
-    public var cumulativePremium: Double
+    public var totalPremiumCollected: Double
     public var contractQuantity: Int = 100
 
     @Relationship(deleteRule: .cascade, inverse: \OptionTrade.position)
@@ -15,7 +15,7 @@ public final class Position {
 
     public var adjustedCostBasis: Double {
         guard shares > 0 else { return 0 }
-        return (grossShareCost - cumulativePremium) / Double(shares)
+        return (grossShareCost - totalPremiumCollected) / Double(shares)
     }
 
     public var strategy: OptionStrategy {
@@ -29,7 +29,7 @@ public final class Position {
         contractQuantity: Int = 100,
         shares: Int = 0,
         grossShareCost: Double = 0,
-        cumulativePremium: Double = 0,
+        totalPremiumCollected: Double = 0,
         trades: [OptionTrade] = []
     ) {
         self.ticker = ticker.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -37,7 +37,7 @@ public final class Position {
         self.contractQuantity = contractQuantity
         self.shares = shares
         self.grossShareCost = grossShareCost
-        self.cumulativePremium = cumulativePremium
+        self.totalPremiumCollected = totalPremiumCollected
         self.trades = trades
     }
 }

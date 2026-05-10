@@ -5,6 +5,7 @@ public enum OptionTradeStatus: String, Codable, CaseIterable, Identifiable {
     case assigned = "Assigned"
     case expired = "Expired"
     case closed = "Closed"
+    case rolled = "Rolled"
 
     public var id: String { rawValue }
 }
