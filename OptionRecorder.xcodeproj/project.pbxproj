@@ -1,0 +1,584 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01A000000000000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000001 /* ContentView.swift */; };
+		01A000000000000000000002 /* OptionRecoderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000002 /* OptionRecoderApp.swift */; };
+		01A000000000000000000003 /* OptionLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000003 /* OptionLedger.swift */; };
+		01A000000000000000000004 /* OptionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000004 /* OptionStrategy.swift */; };
+		01A000000000000000000005 /* OptionTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000005 /* OptionTrade.swift */; };
+		01A000000000000000000006 /* OptionTradeStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000006 /* OptionTradeStatus.swift */; };
+		01A000000000000000000007 /* OptionTradeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000007 /* OptionTradeType.swift */; };
+		01A000000000000000000008 /* Position.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000008 /* Position.swift */; };
+		01A000000000000000000009 /* WheelLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000009 /* WheelLedger.swift */; };
+		01A000000000000000000010 /* OptionRecoderAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000010 /* OptionRecoderAppUITests.swift */; };
+		01A000000000000000000013 /* MarketPriceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01F000000000000000000011 /* MarketPriceProvider.swift */; };
+		01A000000000000000000011 /* WheelStrategyCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 01P000000000000000000001 /* WheelStrategyCore.framework */; };
+		01A000000000000000000012 /* WheelStrategyCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 01P000000000000000000001 /* WheelStrategyCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		01B000000000000000000004 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				01A000000000000000000012 /* WheelStrategyCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		01D000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01P000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 01T000000000000000000001;
+			remoteInfo = WheelStrategyCore;
+		};
+		01D000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 01P000000000000000000010 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 01T000000000000000000002;
+			remoteInfo = OptionRecoderApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		01F000000000000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		01F000000000000000000002 /* OptionRecoderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionRecoderApp.swift; sourceTree = "<group>"; };
+		01F000000000000000000003 /* OptionLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionLedger.swift; sourceTree = "<group>"; };
+		01F000000000000000000004 /* OptionStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionStrategy.swift; sourceTree = "<group>"; };
+		01F000000000000000000005 /* OptionTrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionTrade.swift; sourceTree = "<group>"; };
+		01F000000000000000000006 /* OptionTradeStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionTradeStatus.swift; sourceTree = "<group>"; };
+		01F000000000000000000007 /* OptionTradeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionTradeType.swift; sourceTree = "<group>"; };
+		01F000000000000000000008 /* Position.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Position.swift; sourceTree = "<group>"; };
+		01F000000000000000000009 /* WheelLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelLedger.swift; sourceTree = "<group>"; };
+		01F000000000000000000010 /* OptionRecoderAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionRecoderAppUITests.swift; sourceTree = "<group>"; };
+		01F000000000000000000011 /* MarketPriceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPriceProvider.swift; sourceTree = "<group>"; };
+		01P000000000000000000001 /* WheelStrategyCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = WheelStrategyCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		01P000000000000000000002 /* OptionRecoderApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OptionRecoderApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		01P000000000000000000003 /* OptionRecoderAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OptionRecoderAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		01B000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		01B000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01A000000000000000000011 /* WheelStrategyCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		01B000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		01G000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				01G000000000000000000002 /* Sources */,
+				01G000000000000000000005 /* Tests */,
+				01G000000000000000000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		01G000000000000000000002 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				01G000000000000000000003 /* OptionRecoderApp */,
+				01G000000000000000000004 /* WheelStrategyCore */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		01G000000000000000000003 /* OptionRecoderApp */ = {
+			isa = PBXGroup;
+			children = (
+				01F000000000000000000001 /* ContentView.swift */,
+				01F000000000000000000002 /* OptionRecoderApp.swift */,
+			);
+			path = OptionRecoderApp;
+			sourceTree = "<group>";
+		};
+		01G000000000000000000004 /* WheelStrategyCore */ = {
+			isa = PBXGroup;
+			children = (
+				01F000000000000000000003 /* OptionLedger.swift */,
+				01F000000000000000000004 /* OptionStrategy.swift */,
+				01F000000000000000000005 /* OptionTrade.swift */,
+				01F000000000000000000006 /* OptionTradeStatus.swift */,
+				01F000000000000000000007 /* OptionTradeType.swift */,
+				01F000000000000000000008 /* Position.swift */,
+				01F000000000000000000009 /* WheelLedger.swift */,
+				01F000000000000000000011 /* MarketPriceProvider.swift */,
+			);
+			path = WheelStrategyCore;
+			sourceTree = "<group>";
+		};
+		01G000000000000000000005 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				01G000000000000000000006 /* OptionRecoderAppUITests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		01G000000000000000000006 /* OptionRecoderAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				01F000000000000000000010 /* OptionRecoderAppUITests.swift */,
+			);
+			path = OptionRecoderAppUITests;
+			sourceTree = "<group>";
+		};
+		01G000000000000000000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				01P000000000000000000001 /* WheelStrategyCore.framework */,
+				01P000000000000000000002 /* OptionRecoderApp.app */,
+				01P000000000000000000003 /* OptionRecoderAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		01T000000000000000000001 /* WheelStrategyCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 01C000000000000000000001 /* Build configuration list for PBXNativeTarget "WheelStrategyCore" */;
+			buildPhases = (
+				01S000000000000000000001 /* Sources */,
+				01B000000000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WheelStrategyCore;
+			productName = WheelStrategyCore;
+			productReference = 01P000000000000000000001 /* WheelStrategyCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		01T000000000000000000002 /* OptionRecoderApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 01C000000000000000000002 /* Build configuration list for PBXNativeTarget "OptionRecoderApp" */;
+			buildPhases = (
+				01S000000000000000000002 /* Sources */,
+				01B000000000000000000002 /* Frameworks */,
+				01B000000000000000000004 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				01E000000000000000000001 /* PBXTargetDependency */,
+			);
+			name = OptionRecoderApp;
+			productName = OptionRecoderApp;
+			productReference = 01P000000000000000000002 /* OptionRecoderApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		01T000000000000000000003 /* OptionRecoderAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 01C000000000000000000003 /* Build configuration list for PBXNativeTarget "OptionRecoderAppUITests" */;
+			buildPhases = (
+				01S000000000000000000003 /* Sources */,
+				01B000000000000000000003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				01E000000000000000000002 /* PBXTargetDependency */,
+			);
+			name = OptionRecoderAppUITests;
+			productName = OptionRecoderAppUITests;
+			productReference = 01P000000000000000000003 /* OptionRecoderAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		01P000000000000000000010 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2640;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					01T000000000000000000001 = {
+						CreatedOnToolsVersion = 26.4;
+					};
+					01T000000000000000000002 = {
+						CreatedOnToolsVersion = 26.4;
+					};
+					01T000000000000000000003 = {
+						CreatedOnToolsVersion = 26.4;
+						TestTargetID = 01T000000000000000000002;
+					};
+				};
+			};
+			buildConfigurationList = 01C000000000000000000004 /* Build configuration list for PBXProject "OptionRecorder" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 01G000000000000000000001;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 01G000000000000000000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				01T000000000000000000001 /* WheelStrategyCore */,
+				01T000000000000000000002 /* OptionRecoderApp */,
+				01T000000000000000000003 /* OptionRecoderAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		01S000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01A000000000000000000003 /* OptionLedger.swift in Sources */,
+				01A000000000000000000004 /* OptionStrategy.swift in Sources */,
+				01A000000000000000000005 /* OptionTrade.swift in Sources */,
+				01A000000000000000000006 /* OptionTradeStatus.swift in Sources */,
+				01A000000000000000000007 /* OptionTradeType.swift in Sources */,
+				01A000000000000000000008 /* Position.swift in Sources */,
+				01A000000000000000000009 /* WheelLedger.swift in Sources */,
+				01A000000000000000000013 /* MarketPriceProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		01S000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01A000000000000000000001 /* ContentView.swift in Sources */,
+				01A000000000000000000002 /* OptionRecoderApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		01S000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01A000000000000000000010 /* OptionRecoderAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		01E000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 01T000000000000000000001 /* WheelStrategyCore */;
+			targetProxy = 01D000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		01E000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 01T000000000000000000002 /* OptionRecoderApp */;
+			targetProxy = 01D000000000000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		01C000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		01C000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		01C000000000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.WheelStrategyCore;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		01C000000000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.WheelStrategyCore;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		01C000000000000000000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = OptionRecoderApp;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.OptionRecoderApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		01C000000000000000000010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = OptionRecoderApp;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.OptionRecoderApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		01C000000000000000000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.OptionRecoderAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = OptionRecoderApp;
+			};
+			name = Debug;
+		};
+		01C000000000000000000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zapspark.OptionRecoderAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_VERSION = 6.0;
+				TEST_TARGET_NAME = OptionRecoderApp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		01C000000000000000000001 /* Build configuration list for PBXNativeTarget "WheelStrategyCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01C000000000000000000007 /* Debug */,
+				01C000000000000000000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		01C000000000000000000002 /* Build configuration list for PBXNativeTarget "OptionRecoderApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01C000000000000000000009 /* Debug */,
+				01C000000000000000000010 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		01C000000000000000000003 /* Build configuration list for PBXNativeTarget "OptionRecoderAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01C000000000000000000011 /* Debug */,
+				01C000000000000000000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		01C000000000000000000004 /* Build configuration list for PBXProject "OptionRecorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01C000000000000000000005 /* Debug */,
+				01C000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 01P000000000000000000010 /* Project object */;
+}

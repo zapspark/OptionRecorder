@@ -4,6 +4,7 @@
 
 ## User settings
 xcuserdata/
+*.xcuserstate
 
 ## Obj-C/Swift specific
 *.hmap
@@ -30,6 +31,8 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+.swiftpm/
+.home/
 
 # CocoaPods
 #
@@ -60,3 +63,16 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Local app data and test artifacts
+*.sqlite
+*.sqlite-*
+*.xcresult
+*.log
+
+# Local environment and editor metadata
+.env
+.env.*
+.DS_Store
+
+MEMORY.md
