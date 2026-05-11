@@ -9,6 +9,10 @@ final class OptionRecoderAppUITests: XCTestCase {
 
         let app = XCUIApplication()
         app.launchEnvironment["OPTIONRECORDER_STORE_URL"] = storeURL.path()
+        app.launchArguments += [
+            "-ApplePersistenceIgnoreState", "YES",
+            "-NSQuitAlwaysKeepsWindows", "NO"
+        ]
 
         addTeardownBlock {
             app.terminate()
@@ -18,8 +22,7 @@ final class OptionRecoderAppUITests: XCTestCase {
         app.launch()
         app.activate()
 
-        let addPositionButton = app.buttons["add-position-button"]
-        XCTAssertTrue(addPositionButton.waitForExistence(timeout: 15), app.debugDescription)
+        let addPositionButton = ensureMainWindow(in: app)
 
         addPositionButton.click()
         let tickerField = app.textFields["new-position-ticker-field"]
@@ -98,12 +101,42 @@ final class OptionRecoderAppUITests: XCTestCase {
             adjustedCost: "$0.00",
             openTrades: "0"
         )
+
+        deletePosition(app, ticker: "AAPL", strategy: "Wheel")
+        XCTAssertTrue(app.staticTexts["No Positions"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Select a Position"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertFalse(app.staticTexts["shares-metric-value"].exists, app.debugDescription)
     }
 
     private func temporaryStoreURL() -> URL {
         FileManager.default.temporaryDirectory
             .appending(path: "OptionRecoderAppUITests-\(UUID().uuidString)", directoryHint: .isDirectory)
             .appending(path: "OptionRecorder.sqlite", directoryHint: .notDirectory)
+    }
+
+    private func ensureMainWindow(in app: XCUIApplication) -> XCUIElement {
+        let addPositionButton = app.buttons["add-position-button"]
+        if addPositionButton.waitForExistence(timeout: 15) {
+            return addPositionButton
+        }
+
+        app.activate()
+        app.typeKey("n", modifierFlags: [.command])
+        if addPositionButton.waitForExistence(timeout: 5) {
+            return addPositionButton
+        }
+
+        let fileMenu = app.menuBars.menuBarItems["File"]
+        if fileMenu.waitForExistence(timeout: 2) {
+            fileMenu.click()
+            let newWindowItem = app.menuItems["New Window"]
+            if newWindowItem.waitForExistence(timeout: 2) {
+                newWindowItem.click()
+            }
+        }
+
+        XCTAssertTrue(addPositionButton.waitForExistence(timeout: 10), app.debugDescription)
+        return addPositionButton
     }
 
     private func replaceText(in element: XCUIElement, with text: String) {
@@ -117,6 +150,9 @@ final class OptionRecoderAppUITests: XCTestCase {
     }
 
     private func addTrade(_ app: XCUIApplication, strike: String, premium: String) {
+        XCTAssertTrue(app.staticTexts["Strike"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Premium"].waitForExistence(timeout: 5), app.debugDescription)
+
         replaceText(in: app.textFields["trade-strike-field"], with: strike)
         replaceText(in: app.textFields["trade-premium-field"], with: premium)
 
@@ -139,6 +175,21 @@ final class OptionRecoderAppUITests: XCTestCase {
         let button = app.buttons[identifier]
         XCTAssertTrue(button.waitForEnabled(timeout: 5), app.debugDescription)
         button.click()
+    }
+
+    private func deletePosition(_ app: XCUIApplication, ticker: String, strategy: String) {
+        let deleteButton = app.buttons["delete-position-button-\(ticker)-\(strategy)"]
+        XCTAssertTrue(deleteButton.waitForEnabled(timeout: 5), app.debugDescription)
+        deleteButton.click()
+
+        XCTAssertTrue(app.staticTexts["Delete Book?"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["This will delete \(ticker) \(strategy) and all of its trades."].exists, app.debugDescription)
+        let confirmButton = app.sheets.firstMatch.buttons["Delete Book"]
+        XCTAssertTrue(confirmButton.waitForEnabled(timeout: 5), app.debugDescription)
+        confirmButton.click()
+
+        let row = app.descendants(matching: .any)["position-row-\(ticker)-\(strategy)"]
+        XCTAssertTrue(row.waitForNonExistence(timeout: 5), app.debugDescription)
     }
 
     private func assertMetrics(
@@ -176,6 +227,12 @@ private extension XCUIElement {
 
     func waitForValue(_ expectedValue: String, timeout: TimeInterval) -> Bool {
         let predicate = NSPredicate(format: "exists == true AND value == %@", expectedValue)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: self)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    }
+
+    func waitForNonExistence(timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "exists == false")
         let expectation = XCTNSPredicateExpectation(predicate: predicate, object: self)
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }

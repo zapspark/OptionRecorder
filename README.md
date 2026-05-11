@@ -22,8 +22,11 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 - A 股 ticker 会被路由到 AkShare provider；Swift app 通过 `AKSHARE_PRICE_ENDPOINT` 指向本地或内网 AkShare HTTP bridge，不直接硬耦合 Python 运行时。
 - 在侧栏展示整体账本数量、总股数、总权利金；在详情页展示单个策略账本指标和交易时间线。
 - 侧栏每个股票卡片展示核心三项：当前价格占位、累计收租和当前摊低成本；价格后续可接入已抽象的 provider。
+- 侧栏 Option Book 条目提供删除按钮，二次确认后可删除某个账本及其交易记录。
+- 主界面支持左右分栏缩放时的自适应布局：侧栏汇总、股票卡片、详情指标卡、交易录入区和交易行会按可用宽度自动换行，避免内容被裁切。
+- 新交易录入区为行权价、权利金和到期日提供行内标签；期权交易显示 `Strike` / `Premium`，股票交易显示 `Price` / `Premium`，主动平仓显示 `Strike` / `Close Premium`。
 - 对 Open 状态的 Cash-Secured Put，时间线行内提供 `Expired`、`Assigned`、`Rolled` 三个快捷按钮，减少手动选择状态的录入成本。
-- 支持删除持仓和交易；删除持仓会级联删除其交易记录。
+- 支持删除持仓和交易；删除持仓会先弹出确认框，确认后级联删除其交易记录，侧栏条目可直接触发持仓删除。
 
 ## 当前状态
 
@@ -38,6 +41,7 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 - 展期状态 `Rolled`。
 - 每个账本可配置一张期权对应的标的数量，默认 `100`。
 - 正股价格 provider 抽象，支持按 ticker 市场类型路由到不同数据源。
+- macOS 双栏界面自适应布局和新交易字段标签。
 - Core 测试和 macOS UI 自动化测试基础。
 
 待接入 UI：
@@ -70,7 +74,14 @@ OptionRecorder 是一个本地 macOS 期权策略记账工具。它用 SwiftUI �
 swift run OptionRecoderApp
 ```
 
-应用窗口启动后，可以通过侧栏右上角新增 ticker 和策略，也可以使用 `Command + N` 新建账本。在持仓详情页填写交易信息后，使用 `Command + Return` 或页面按钮添加交易。
+应用窗口启动后，可以通过侧栏右上角新增 ticker 和策略，也可以使用 `Command + N` 新建账本。在持仓详情页填写交易信息后，使用 New Trade 表单里的 `Add` 按钮添加交易。
+
+新交易字段含义：
+
+- `Strike`：期权行权价；股票买卖时显示为 `Price`，表示股票成交价。
+- `Premium`：每股权利金，系统会按账本的合约数量计算总权利金。
+- `Close Premium`：主动平仓支付的每股权利金，会作为负向现金流扣减累计权利金。
+- `Expiry`：期权到期日。
 
 ## 测试
 
@@ -99,6 +110,8 @@ xcodebuild \
 
 UI 测试会使用临时 SQLite 文件，不会写入用户真实的 `~/Library/Application Support/OptionRecorder/OptionRecorder.sqlite`。
 在 Codex sandbox 中，macOS 会阻止连接 `com.apple.testmanagerd`，因此请在本机普通终端中执行上面的命令。
+
+UI 测试启动时会禁用 macOS 窗口状态恢复，并在没有主窗口时通过 `Command + N` 或 `File > New Window` 自动创建窗口。这是为了避免上一次手动关闭窗口后，测试只看到菜单栏而找不到主界面控件。
 
 ## GitHub Actions
 
@@ -163,5 +176,7 @@ Tests/
 
 最近一次验证：
 
-- `HOME="$PWD/.home" swift test --disable-sandbox`：10 个 core 测试通过。
-- 本机 `xcodebuild ... test` UI 测试：已通过。
+- `HOME="$PWD/.home" swift test --disable-sandbox`：12 个 core 测试通过。
+- `git diff --check`：通过。
+- `xcodebuild -project OptionRecorder.xcodeproj -scheme OptionRecoderApp -derivedDataPath .build/XcodeDerivedData -showBuildSettings`：可解析工程；Codex sandbox 中仍会输出 CoreSimulator 权限警告。
+- 本机 `xcodebuild ... test` UI 测试：最近一次失败原因是应用启动后只恢复了菜单栏、没有主窗口；已在 UI 测试中加入禁用窗口状态恢复和自动创建主窗口的兜底，需在本机普通终端复跑确认。

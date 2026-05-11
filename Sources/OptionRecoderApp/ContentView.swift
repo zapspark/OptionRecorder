@@ -11,6 +11,7 @@ struct ContentView: View {
 
     @State private var selectedPosition: Position?
     @State private var showingNewPosition = false
+    @State private var positionPendingDeletion: Position?
     @State private var errorMessage: String?
 
     private var totalPremium: Double {
@@ -38,15 +39,19 @@ struct ContentView: View {
                 } else {
                     List(selection: $selectedPosition) {
                         ForEach(positions) { position in
-                            PositionRow(position: position)
+                            PositionRow(
+                                position: position,
+                                onDelete: { requestDeletePosition(position) }
+                            )
                                 .tag(position)
                         }
-                        .onDelete(perform: deletePositions)
+                        .onDelete(perform: requestDeletePositions)
                     }
                     .listStyle(.sidebar)
                 }
             }
             .navigationTitle("Positions")
+            .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 380)
             .toolbar {
                 Button {
                     showingNewPosition = true
@@ -77,21 +82,26 @@ struct ContentView: View {
         } message: {
             Text(errorMessage ?? "Unknown error")
         }
+        .alert("Delete Book?", isPresented: deleteConfirmationPresented) {
+            Button("Cancel", role: .cancel) {
+                positionPendingDeletion = nil
+            }
+            Button("Delete Book", role: .destructive) {
+                confirmDeletePosition()
+            }
+        } message: {
+            Text(deleteConfirmationMessage)
+        }
         .accessibilityIdentifier("option-recorder-root")
         .frame(minWidth: 1040, minHeight: 680)
     }
 
     private var sidebarSummary: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Option Book")
-                .font(.headline)
-
-            HStack(alignment: .firstTextBaseline, spacing: 18) {
-                HStack(spacing: 18) {
-                    summaryItem("Books", value: "\(positions.count)")
-                    summaryItem("Shares", value: "\(totalShares)")
-                    summaryItem("Premium", value: totalPremium.formatted(.currency(code: currencyCode)))
-                }
+            HStack {
+                Text("Option Book")
+                    .font(.headline)
+                    .lineLimit(1)
 
                 Spacer()
 
@@ -99,12 +109,24 @@ struct ContentView: View {
                     showingNewPosition = true
                 } label: {
                     Label("Add Position", systemImage: "plus")
+                        .labelStyle(.iconOnly)
                 }
                 .buttonStyle(.bordered)
+                .help("Add Position")
                 .accessibilityIdentifier("add-position-button")
+            }
+
+            LazyVGrid(columns: sidebarSummaryColumns, alignment: .leading, spacing: 8) {
+                summaryItem("Books", value: "\(positions.count)")
+                summaryItem("Shares", value: "\(totalShares)")
+                summaryItem("Premium", value: totalPremium.formatted(.currency(code: currencyCode)))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var sidebarSummaryColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 64), spacing: 10, alignment: .leading)]
     }
 
     private func summaryItem(_ title: String, value: String) -> some View {
@@ -112,11 +134,14 @@ struct ContentView: View {
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
             Text(value)
                 .font(.callout.weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func addPosition(ticker: String, strategy: OptionStrategy, contractQuantity: Int) -> Bool {
@@ -143,14 +168,46 @@ struct ContentView: View {
         }
     }
 
-    private func deletePositions(at offsets: IndexSet) {
-        for index in offsets {
-            let position = positions[index]
-            if selectedPosition == position {
-                selectedPosition = nil
-            }
-            modelContext.delete(position)
+    private func requestDeletePositions(at offsets: IndexSet) {
+        guard let firstIndex = offsets.first else { return }
+        requestDeletePosition(positions[firstIndex])
+    }
+
+    private func requestDeletePosition(_ position: Position) {
+        positionPendingDeletion = position
+    }
+
+    private func confirmDeletePosition() {
+        guard let position = positionPendingDeletion else {
+            return
         }
+        positionPendingDeletion = nil
+        deletePosition(position)
+    }
+
+    private var deleteConfirmationPresented: Binding<Bool> {
+        Binding(
+            get: { positionPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    positionPendingDeletion = nil
+                }
+            }
+        )
+    }
+
+    private var deleteConfirmationMessage: String {
+        guard let position = positionPendingDeletion else {
+            return "This will delete the selected book and all of its trades."
+        }
+        return "This will delete \(position.ticker) \(position.strategy.rawValue) and all of its trades."
+    }
+
+    private func deletePosition(_ position: Position) {
+        if selectedPosition == position {
+            selectedPosition = nil
+        }
+        modelContext.delete(position)
 
         do {
             try modelContext.save()
@@ -177,39 +234,60 @@ struct ContentView: View {
 
 private struct PositionRow: View {
     let position: Position
+    let onDelete: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack {
-                    Text(position.ticker)
-                        .font(.headline)
-                    Text(position.strategy.rawValue)
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(.quaternary, in: Capsule())
-                    Spacer()
-                    Text("\(position.shares) sh")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(position.ticker)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .accessibilityIdentifier("position-row-\(position.ticker)-\(position.strategy.rawValue)")
 
-                HStack(spacing: 12) {
-                    positionStat("Price", value: "--")
-                    positionStat(
-                        "Premium",
-                        value: position.totalPremiumCollected.formatted(.currency(code: currencyCode))
-                    )
-                    positionStat(
-                        "Cost Basis",
-                        value: position.adjustedCostBasis.formatted(.currency(code: currencyCode))
-                    )
+                Text(position.strategy.rawValue)
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(.quaternary, in: Capsule())
+
+                Spacer(minLength: 8)
+
+                Text("\(position.shares) sh")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                Button(role: .destructive) {
+                    onDelete()
+                } label: {
+                    Label("Delete Position", systemImage: "trash")
+                        .labelStyle(.iconOnly)
                 }
+                .buttonStyle(.borderless)
+                .help("Delete Position")
+                .accessibilityIdentifier("delete-position-button-\(position.ticker)-\(position.strategy.rawValue)")
+            }
+
+            LazyVGrid(columns: positionStatColumns, alignment: .leading, spacing: 8) {
+                positionStat("Price", value: "--")
+                positionStat(
+                    "Premium",
+                    value: position.totalPremiumCollected.formatted(.currency(code: currencyCode))
+                )
+                positionStat(
+                    "Cost Basis",
+                    value: position.adjustedCostBasis.formatted(.currency(code: currencyCode))
+                )
             }
         }
         .padding(.vertical, 6)
-        .accessibilityIdentifier("position-row-\(position.ticker)-\(position.strategy.rawValue)")
+    }
+
+    private var positionStatColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 74), spacing: 10, alignment: .leading)]
     }
 
     private func positionStat(_ title: String, value: String) -> some View {
@@ -269,70 +347,61 @@ private struct PositionDetailView: View {
     }
 
     private var detailHeader: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(position.ticker)
-                    .font(.largeTitle.weight(.semibold))
-                Text("\(position.strategy.rawValue) strategy ledger")
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button {
-                addTrade()
-            } label: {
-                Label("Add Trade", systemImage: "plus.circle.fill")
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(!canAddTrade)
-            .keyboardShortcut(.return, modifiers: [.command])
+        VStack(alignment: .leading, spacing: 4) {
+            Text(position.ticker)
+                .font(.largeTitle.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text("\(position.strategy.rawValue) strategy ledger")
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 
     private var metricGrid: some View {
-        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 14) {
-            GridRow {
-                MetricTile(
-                    title: "Shares",
-                    value: "\(position.shares)",
-                    icon: "number",
-                    identifier: "shares-metric"
-                )
-                MetricTile(
-                    title: "Strategy",
-                    value: position.strategy.rawValue,
-                    icon: "rectangle.3.group",
-                    identifier: "strategy-metric"
-                )
-                MetricTile(
-                    title: "Adjusted Cost",
-                    value: position.adjustedCostBasis.formatted(.currency(code: currencyCode)),
-                    icon: "target",
-                    identifier: "adjusted-cost-metric"
-                )
-                MetricTile(
-                    title: "Premium Collected",
-                    value: position.totalPremiumCollected.formatted(.currency(code: currencyCode)),
-                    icon: "banknote",
-                    identifier: "premium-metric"
-                )
-                MetricTile(
-                    title: "Open Trades",
-                    value: "\(position.trades.filter { $0.status == .open && $0.type.countsAsOpenTrade }.count)",
-                    icon: "clock",
-                    identifier: "open-trades-metric"
-                )
-            }
-            GridRow {
-                MetricTile(
-                    title: "Contract Qty",
-                    value: "\(position.contractQuantity)",
-                    icon: "number.circle",
-                    identifier: "contract-quantity-metric"
-                )
-            }
+        LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 14) {
+            MetricTile(
+                title: "Shares",
+                value: "\(position.shares)",
+                icon: "number",
+                identifier: "shares-metric"
+            )
+            MetricTile(
+                title: "Strategy",
+                value: position.strategy.rawValue,
+                icon: "rectangle.3.group",
+                identifier: "strategy-metric"
+            )
+            MetricTile(
+                title: "Adjusted Cost",
+                value: position.adjustedCostBasis.formatted(.currency(code: currencyCode)),
+                icon: "target",
+                identifier: "adjusted-cost-metric"
+            )
+            MetricTile(
+                title: "Premium Collected",
+                value: position.totalPremiumCollected.formatted(.currency(code: currencyCode)),
+                icon: "banknote",
+                identifier: "premium-metric"
+            )
+            MetricTile(
+                title: "Open Trades",
+                value: "\(position.trades.filter { $0.status == .open && $0.type.countsAsOpenTrade }.count)",
+                icon: "clock",
+                identifier: "open-trades-metric"
+            )
+            MetricTile(
+                title: "Contract Qty",
+                value: "\(position.contractQuantity)",
+                icon: "number.circle",
+                identifier: "contract-quantity-metric"
+            )
         }
+    }
+
+    private var metricColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .leading)]
     }
 
     private var tradeForm: some View {
@@ -348,31 +417,95 @@ private struct PositionDetailView: View {
             .frame(maxWidth: 620)
             .accessibilityIdentifier("trade-type-picker")
 
-            HStack(spacing: 12) {
-                TextField("Strike", value: $strike, format: .number.precision(.fractionLength(2)))
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 110)
-                    .accessibilityIdentifier("trade-strike-field")
+            tradeControls
+        }
+    }
 
-                TextField("Premium", value: $premium, format: .number.precision(.fractionLength(2)))
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 110)
-                    .accessibilityIdentifier("trade-premium-field")
-
-                DatePicker("Expiry", selection: $expiryDate, displayedComponents: .date)
-                    .labelsHidden()
-                    .frame(width: 150)
-                    .accessibilityIdentifier("trade-expiry-picker")
-
-                Button {
-                    addTrade()
-                } label: {
-                    Label("Add", systemImage: "plus")
-                }
-                .buttonStyle(.bordered)
-                .disabled(!canAddTrade)
-                .accessibilityIdentifier("add-trade-form-button")
+    private var tradeControls: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                tradeNumberField(strikeFieldLabel, value: $strike, identifier: "trade-strike-field")
+                tradeNumberField(premiumFieldLabel, value: $premium, identifier: "trade-premium-field")
+                expiryField()
+                addTradeFormButton
             }
+
+            LazyVGrid(columns: narrowTradeControlColumns, alignment: .leading, spacing: 12) {
+                tradeNumberField(strikeFieldLabel, value: $strike, identifier: "trade-strike-field")
+                tradeNumberField(premiumFieldLabel, value: $premium, identifier: "trade-premium-field")
+                expiryField()
+                addTradeFormButton
+            }
+            .frame(maxWidth: 360, alignment: .leading)
+        }
+    }
+
+    private var narrowTradeControlColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 168), spacing: 12, alignment: .leading)]
+    }
+
+    private func tradeNumberField(
+        _ label: String,
+        value: Binding<Double>,
+        identifier: String,
+        width: CGFloat? = nil
+    ) -> some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+
+            TextField(label, value: value, format: .number.precision(.fractionLength(2)))
+                .textFieldStyle(.roundedBorder)
+                .frame(width: width ?? 96)
+                .accessibilityIdentifier(identifier)
+        }
+    }
+
+    private func expiryField(width: CGFloat? = nil) -> some View {
+        HStack(spacing: 8) {
+            Text("Expiry")
+                .font(.callout.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            DatePicker("Expiry", selection: $expiryDate, displayedComponents: .date)
+                .labelsHidden()
+                .frame(width: width ?? 150)
+                .accessibilityIdentifier("trade-expiry-picker")
+        }
+    }
+
+    private var addTradeFormButton: some View {
+        Button {
+            addTrade()
+        } label: {
+            Label("Add", systemImage: "plus")
+        }
+        .buttonStyle(.bordered)
+        .disabled(!canAddTrade)
+        .accessibilityIdentifier("add-trade-form-button")
+    }
+
+    private var strikeFieldLabel: String {
+        switch tradeType {
+        case .buyStock, .sellStock:
+            return "Price"
+        case .cashSecuredPut, .coveredCall, .activeClose:
+            return "Strike"
+        }
+    }
+
+    private var premiumFieldLabel: String {
+        switch tradeType {
+        case .activeClose:
+            return "Close Premium"
+        case .buyStock, .sellStock:
+            return "Premium"
+        case .cashSecuredPut, .coveredCall:
+            return "Premium"
         }
     }
 
@@ -519,49 +652,75 @@ private struct TradeRow: View {
     let onDelete: (OptionTrade) -> Void
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: typeIcon)
-                .font(.title2)
-                .foregroundStyle(typeTint)
-                .frame(width: 30)
-
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
-                    Text(trade.type.rawValue)
-                        .font(.headline)
-
-                    Text(trade.status.rawValue)
-                        .font(.caption.weight(.medium))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(statusTint.opacity(0.14), in: Capsule())
-                        .foregroundStyle(statusTint)
-                }
-
-                HStack(spacing: 12) {
-                    Label(trade.strike.formatted(.currency(code: currencyCode)), systemImage: "target")
-                    Label(trade.premium.formatted(.currency(code: currencyCode)), systemImage: "banknote")
-                    Label(trade.expiry.formatted(.dateTime.month().day().year()), systemImage: "calendar")
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                tradeIcon
+                tradeSummary
             }
 
-            Spacer()
-
-            statusControl
-
-            Button(role: .destructive) {
-                onDelete(trade)
-            } label: {
-                Label("Delete", systemImage: "trash")
-                    .labelStyle(.iconOnly)
+            HStack {
+                Spacer(minLength: 42)
+                tradeActions
             }
-            .buttonStyle(.borderless)
-            .help("Delete trade")
-            .accessibilityIdentifier("delete-trade-button")
         }
         .padding(12)
+    }
+
+    private var tradeIcon: some View {
+        Image(systemName: typeIcon)
+            .font(.title2)
+            .foregroundStyle(typeTint)
+            .frame(width: 30)
+    }
+
+    private var tradeSummary: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 8) {
+                Text(trade.type.rawValue)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                Text(trade.status.rawValue)
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(statusTint.opacity(0.14), in: Capsule())
+                    .foregroundStyle(statusTint)
+            }
+
+            LazyVGrid(columns: tradeDetailColumns, alignment: .leading, spacing: 8) {
+                Label(trade.strike.formatted(.currency(code: currencyCode)), systemImage: "target")
+                Label(trade.premium.formatted(.currency(code: currencyCode)), systemImage: "banknote")
+                Label(trade.expiry.formatted(.dateTime.month().day().year()), systemImage: "calendar")
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private var tradeActions: some View {
+        HStack(spacing: 8) {
+            statusControl
+            deleteButton
+        }
+    }
+
+    private var deleteButton: some View {
+        Button(role: .destructive) {
+            onDelete(trade)
+        } label: {
+            Label("Delete", systemImage: "trash")
+                .labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderless)
+        .help("Delete trade")
+        .accessibilityIdentifier("delete-trade-button")
+    }
+
+    private var tradeDetailColumns: [GridItem] {
+        [GridItem(.adaptive(minimum: 104), spacing: 10, alignment: .leading)]
     }
 
     @ViewBuilder
